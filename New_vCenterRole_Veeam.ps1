@@ -129,7 +129,7 @@ Write-Host "Connected to your vCenter server $vCenterServer" -ForegroundColor Gr
 
 # Provide a name for your new role
 $NewRole = Read-Host "Enter your desired name for the new vCenter role"
-Write-Host "Thanks, your new vCenter roll will be named $NewRole" -ForegroundColor Green
+Write-Host "Thanks, your new vCenter role will be named $NewRole" -ForegroundColor Green
 
 # Creating the new role with the needed permissions
 New-VIRole -Name $NewRole -Privilege (Get-VIPrivilege -Id $VeeamPrivileges) | Out-Null
