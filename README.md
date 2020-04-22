@@ -5,8 +5,6 @@ This PowerShell / PowerCLI script lets you create a new vCenter server role with
 The privileges used are based on the recommendations out of the Veeam Help Center which you can find here:
 [Cumulative Permission for VMware vSphere - Veeam Help Center](https://helpcenter.veeam.com/docs/backup/permissions/cumulativepermissions.html?ver=100)
 
-[Cumulative Permission for VMware vSphere - Veeam Help Center](https://helpcenter.veeam.com/docs/backup/permissions/cumulativepermissions.html?ver=100){:target="_blank"}
-
 Simply execute the script and follow the steps to fill in the relevant data like your vCenter server name, the username and your password. The script will then ask you to choose a name for your new role and automatically creates it.
 
 ![Example execution of the script](https://github.com/falkobanaszak/vCenter-role-for-Veeam/blob/master/vCenter-role-for-Veeam-Output.png)
