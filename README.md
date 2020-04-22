@@ -8,3 +8,10 @@ The privileges used are based on the recommendations out of the Veeam Help Cente
 Simply execute the script and follow the steps to fill in the relevant data like your vCenter server name, the username and your password. The script will then ask you to choose a name for your new role and automatically creates it.
 
 ![Example execution of the script](https://github.com/falkobanaszak/vCenter-role-for-Veeam/blob/master/vCenter-role-for-Veeam-Output.png)
+
+Feel free to give me feedback on this script, as I want to further improve it.
+
+**Already planned improvements**
+ - [ ] Add a function to assign a user to the role
+ 
+You can get the script here: [New_vCenterRole_Veeam.ps1](https://github.com/falkobanaszak/vCenter-role-for-Veeam/blob/master/New_vCenterRole_Veeam.ps1)
