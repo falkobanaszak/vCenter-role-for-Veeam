@@ -15,3 +15,8 @@ Feel free to give me feedback on this script, as I want to further improve it.
  - [ ] Add a function to assign a user to the role
  
 You can get the script here: [New_vCenterRole_Veeam.ps1](https://github.com/falkobanaszak/vCenter-role-for-Veeam/blob/master/New_vCenterRole_Veeam.ps1)
+
+Successful tested against: 
+- VMware vCenter 6.5
+- VMware vCenter 6.7
+- VMware vCenter 7.0
