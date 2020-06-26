@@ -134,7 +134,7 @@ Write-Host "Thanks, your new vCenter role will be named $NewRole" -ForegroundCol
 # Creating the new role with the needed permissions
 New-VIRole -Name $NewRole -Privilege (Get-VIPrivilege -Id $VeeamPrivileges) | Out-Null
 Write-Host "Your new vCenter role has been created, here it is:" -ForegroundColor Green
-Get-VIRole -Name $NewRole | Select-Object Description, PrivilegeList, Server, Name | fl
+Get-VIRole -Name $NewRole | Select-Object Description, PrivilegeList, Server, Name | Format-List
 
 # Disconnecting from the vCenter Server
 Disconnect-VIServer -Confirm:$false
