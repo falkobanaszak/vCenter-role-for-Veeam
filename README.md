@@ -13,6 +13,7 @@ Feel free to give me feedback on this script, as I want to further improve it.
 
 **Already planned improvements**
  - [ ] Add a function to assign a user to the role
+ - [ ] Add a function to check against an existing role, print the missing privileges and let the user decide to apply the missing privileges to the already existing role
  
 You can get the script here: [New_vCenterRole_Veeam.ps1](https://github.com/falkobanaszak/vCenter-role-for-Veeam/blob/master/New_vCenterRole_Veeam.ps1)
 
