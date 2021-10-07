@@ -12,6 +12,7 @@
     
     Change Log    V1.00, 21/04/2020 - Initial version: Creates a new vCenter role with privileges required for Veeam Backup & Replication operations
     Change Log    V2.00, 06/08/2021 - Second version: Updated the script to use the Veeam Backup & Replication Version 11 cumulative privileges
+    Change Log    V2.01, 07/10/2021 - Second version revision: Add missing "VirtualMachine.Config.Annotation"
 .LICENSE
     MIT License
     Copyright (c) 2019 Falko Banaszak
@@ -79,6 +80,7 @@ $VeeamPrivileges = @(
     'VirtualMachine.Config.Rename',
     'VirtualMachine.Config.AddExistingDisk',
     'VirtualMachine.Config.AddNewDisk',
+    'VirtualMachine.Config.Annotation',
     'VirtualMachine.Config.RemoveDisk',
     'VirtualMachine.Config.RawDevice',
     'VirtualMachine.Config.AddRemoveDevice',
