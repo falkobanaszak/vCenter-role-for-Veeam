@@ -15,6 +15,7 @@ Extension.Register
 Extension.Unregister
 Folder.Create
 Folder.Delete
+Global.Diagnostics
 Global.DisableMethods
 Global.EnableMethods
 Global.Licenses
@@ -22,7 +23,10 @@ Global.LogEvent
 Global.ManageCustomFields
 Global.SetCustomField
 Global.Settings
+Host.Config.AdvancedConfig
+Host.Config.Maintenance
 Host.Config.Network
+Host.Config.Patch
 Host.Config.Storage
 InventoryService.Tagging.AttachTag
 Network.Assign
@@ -33,6 +37,8 @@ Resource.CreatePool
 Resource.DeletePool
 Resource.HotMigrate
 StoragePod.Config
+StorageProfile.Update
+StorageProfile.View
 System.Anonymous
 System.Read
 System.View
@@ -48,6 +54,7 @@ VirtualMachine.Config.ChangeTracking
 VirtualMachine.Config.DiskExtend
 VirtualMachine.Config.DiskLease
 VirtualMachine.Config.EditDevice
+VirtualMachine.Config.RawDevice
 VirtualMachine.Config.RemoveDisk
 VirtualMachine.Config.Rename
 VirtualMachine.Config.Resource
@@ -60,14 +67,20 @@ VirtualMachine.Interact.DeviceConnection
 VirtualMachine.Interact.GuestControl
 VirtualMachine.Interact.PowerOff
 VirtualMachine.Interact.PowerOn
+VirtualMachine.Interact.SetCDMedia
+VirtualMachine.Interact.SetFloppyMedia
 VirtualMachine.Interact.Suspend
+VirtualMachine.Inventory.Create
 VirtualMachine.Inventory.Delete
 VirtualMachine.Inventory.Register
 VirtualMachine.Inventory.Unregister
 VirtualMachine.Provisioning.DiskRandomAccess
 VirtualMachine.Provisioning.DiskRandomRead
 VirtualMachine.Provisioning.GetVmFiles
+VirtualMachine.Provisioning.MarkAsTemplate
+VirtualMachine.Provisioning.MarkAsVM
 VirtualMachine.Provisioning.PutVmFiles
 VirtualMachine.State.CreateSnapshot
 VirtualMachine.State.RemoveSnapshot
+VirtualMachine.State.RenameSnapshot
 VirtualMachine.State.RevertToSnapshot
