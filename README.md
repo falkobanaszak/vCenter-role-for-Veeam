@@ -23,3 +23,4 @@ Successful tested against:
 - VMware vCenter 7.0
 - Veeam Backup & Replication Version 10
 - Veeam Backup & Replication Version 11
+- Veeam Backup & Replication Version 12
