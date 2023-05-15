@@ -4,15 +4,18 @@
 .DESCRIPTION
     This script is used to create a new role on your vCenter server.
     The newly created role will be filled with the needed permissions for using it with Veeam Backup & Replication
-    The permissions are based on the Veeam Help Center Cumulative Permissions and can be found here: https://helpcenter.veeam.com/docs/backup/permissions/cumulativepermissions.html?ver=110
+    The permissions are based on the Veeam Help Center Cumulative Permissions and can be found here: https://helpcenter.veeam.com/docs/backup/permissions/cumulativepermissions.html?ver=120
 .OUTPUTS
     Results are printed to the console.
 .NOTES
     Author        Falko Banaszak, https://virtualhome.blog, Twitter: @Falko_Banaszak
+    Contributor   Dean Lewis, https://veducate.co.uk, Twitter: @SaintDLE
     
     Change Log    V1.00, 21/04/2020 - Initial version: Creates a new vCenter role with privileges required for Veeam Backup & Replication operations
     Change Log    V2.00, 06/08/2021 - Second version: Updated the script to use the Veeam Backup & Replication Version 11 cumulative privileges
     Change Log    V2.01, 07/10/2021 - Second version revision: Add missing "VirtualMachine.Config.Annotation"
+    Change Log    V3.00, 07/15/2023 - Updated code for better error handling, added ability to check if role exists and add missing permissions to existing role, added ability to add user to new role
+    
 .LICENSE
     MIT License
     Copyright (c) 2019 Falko Banaszak
@@ -33,96 +36,99 @@
     SOFTWARE.
 #>
 
-# Here are all necessary and cumualative vCenter Privileges needed for all operations of Veeam Backup & Replication V10
+# Here are all necessary and cumualative vCenter Privileges needed for all operations of Veeam Backup & Replication V12
 $VeeamPrivileges = @(
-    'System.Anonymous',
-    'System.View',
-    'System.Read',
-    'Global.ManageCustomFields',
-    'Global.SetCustomField',
-    'Global.LogEvent',
-    'Global.Licenses',
-    'Global.Settings',
-    'Global.DisableMethods',
-    'Global.EnableMethods',
-    'Folder.Create',
-    'Folder.Delete',
-    'Datastore.Browse',
-    'Datastore.DeleteFile',
-    'Datastore.FileManagement',
-    'Datastore.AllocateSpace',
-    'Datastore.Config',
-    'Network.Config',
-    'Network.Assign',
-    'DVPortgroup.Create',
-    'DVPortgroup.Modify',
-    'DVPortgroup.Delete',
-    'Host.Config.Maintenance',
-    'Host.Config.Storage',
-    'Host.Config.Network',
-    'Host.Config.AdvancedConfig',
-    'Host.Config.Patch',
-    'VirtualMachine.Inventory.Create',
-    'VirtualMachine.Inventory.Register',
-    'VirtualMachine.Inventory.Delete',
-    'VirtualMachine.Inventory.Unregister',
-    'VirtualMachine.Interact.PowerOn',
-    'VirtualMachine.Interact.PowerOff',
-    'VirtualMachine.Interact.Suspend',
-    'VirtualMachine.Interact.ConsoleInteract',
-    'VirtualMachine.Interact.DeviceConnection',
-    'VirtualMachine.Interact.SetCDMedia',
-    'VirtualMachine.Interact.SetFloppyMedia',
-    'VirtualMachine.Interact.GuestControl',
-    'VirtualMachine.GuestOperations.Query',
-    'VirtualMachine.GuestOperations.Modify',
-    'VirtualMachine.GuestOperations.Execute',
-    'VirtualMachine.Config.Rename',
-    'VirtualMachine.Config.AddExistingDisk',
-    'VirtualMachine.Config.AddNewDisk',
-    'VirtualMachine.Config.Annotation',
-    'VirtualMachine.Config.RemoveDisk',
-    'VirtualMachine.Config.RawDevice',
-    'VirtualMachine.Config.AddRemoveDevice',
-    'VirtualMachine.Config.EditDevice',
-    'VirtualMachine.Config.Settings',
-    'VirtualMachine.Config.Resource',
-    'VirtualMachine.Config.AdvancedConfig',
-    'VirtualMachine.Config.DiskLease',
-    'VirtualMachine.Config.DiskExtend',
-    'VirtualMachine.Config.ChangeTracking',
-    'VirtualMachine.State.CreateSnapshot',
-    'VirtualMachine.State.RevertToSnapshot',
-    'VirtualMachine.State.RemoveSnapshot',
-    'VirtualMachine.State.RenameSnapshot',
-    'VirtualMachine.Provisioning.MarkAsTemplate',
-    'VirtualMachine.Provisioning.MarkAsVM',
-    'VirtualMachine.Provisioning.DiskRandomAccess',
-    'VirtualMachine.Provisioning.DiskRandomRead',
-    'VirtualMachine.Provisioning.GetVmFiles',
-    'VirtualMachine.Provisioning.PutVmFiles',
-    'Resource.AssignVMToPool',
-    'Resource.CreatePool',
-    'Resource.DeletePool',
-    'Resource.HotMigrate',
-    'Resource.ColdMigrate',
-    'Extension.Register',
-    'Extension.Unregister',
-    'VApp.AssignVM',
-    'VApp.AssignResourcePool',
-    'VApp.Unregister',
-    'StoragePod.Config',
     'Cryptographer.Access',
-    'Cryptographer.EncryptNew',
-    'Cryptographer.Encrypt',
-    'Cryptographer.Migrate',
-    'Cryptographer.AddDisk',
-    'InventoryService.Tagging.AttachTag',
-    'StorageProfile.Update',
-    'StorageProfile.View')
+'Cryptographer.AddDisk',
+'Cryptographer.Encrypt',
+'Cryptographer.EncryptNew',
+'Cryptographer.Migrate',
+'DVPortgroup.Create',
+'DVPortgroup.Delete',
+'DVPortgroup.Modify',
+'Datastore.AllocateSpace',
+'Datastore.Browse',
+'Datastore.Config',
+'Datastore.DeleteFile',
+'Datastore.FileManagement',
+'Extension.Register',
+'Extension.Unregister',
+'Folder.Create',
+'Folder.Delete',
+'Global.Diagnostics',
+'Global.DisableMethods',
+'Global.EnableMethods',
+'Global.Licenses',
+'Global.LogEvent',
+'Global.ManageCustomFields',
+'Global.SetCustomField',
+'Global.Settings',
+'Host.Config.AdvancedConfig',
+'Host.Config.Maintenance',
+'Host.Config.Network',
+'Host.Config.Patch',
+'Host.Config.Storage',
+'InventoryService.Tagging.AttachTag',
+'Network.Assign',
+'Network.Config',
+'Resource.AssignVMToPool',
+'Resource.ColdMigrate',
+'Resource.CreatePool',
+'Resource.DeletePool',
+'Resource.HotMigrate',
+'StoragePod.Config',
+'StorageProfile.Update',
+'StorageProfile.View',
+'System.Anonymous',
+'System.Read',
+'System.View',
+'VApp.AssignResourcePool',
+'VApp.AssignVM',
+'VApp.Unregister',
+'VirtualMachine.Config.AddExistingDisk',
+'VirtualMachine.Config.AddNewDisk',
+'VirtualMachine.Config.AddRemoveDevice',
+'VirtualMachine.Config.AdvancedConfig',
+'VirtualMachine.Config.Annotation',
+'VirtualMachine.Config.ChangeTracking',
+'VirtualMachine.Config.DiskExtend',
+'VirtualMachine.Config.DiskLease',
+'VirtualMachine.Config.EditDevice',
+'VirtualMachine.Config.RawDevice',
+'VirtualMachine.Config.RemoveDisk',
+'VirtualMachine.Config.Rename',
+'VirtualMachine.Config.Resource',
+'VirtualMachine.Config.Settings',
+'VirtualMachine.GuestOperations.Execute',
+'VirtualMachine.GuestOperations.Modify',
+'VirtualMachine.GuestOperations.Query',
+'VirtualMachine.Interact.ConsoleInteract',
+'VirtualMachine.Interact.DeviceConnection',
+'VirtualMachine.Interact.GuestControl',
+'VirtualMachine.Interact.PowerOff',
+'VirtualMachine.Interact.PowerOn',
+'VirtualMachine.Interact.SetCDMedia',
+'VirtualMachine.Interact.SetFloppyMedia',
+'VirtualMachine.Interact.Suspend',
+'VirtualMachine.Inventory.Create',
+'VirtualMachine.Inventory.Delete',
+'VirtualMachine.Inventory.Register',
+'VirtualMachine.Inventory.Unregister',
+'VirtualMachine.Provisioning.DiskRandomAccess',
+'VirtualMachine.Provisioning.DiskRandomRead',
+'VirtualMachine.Provisioning.GetVmFiles',
+'VirtualMachine.Provisioning.MarkAsTemplate',
+'VirtualMachine.Provisioning.MarkAsVM',
+'VirtualMachine.Provisioning.PutVmFiles',
+'VirtualMachine.State.CreateSnapshot',
+'VirtualMachine.State.RemoveSnapshot',
+'VirtualMachine.State.RenameSnapshot',
+'VirtualMachine.State.RevertToSnapshot')
 
 # Load the PowerCLI SnapIn and set the configuration
-Add-PSSnapin VMware.VimAutomation.Core -ea "SilentlyContinue"
+if (!(Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
+    Add-PSSnapin VMware.VimAutomation.Core
+}
 Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 
 # Get the vCenter Server Name to connect to
@@ -138,11 +144,48 @@ $vCenterUserPassword = Read-Host "Enter your password (no worries it is a secure
 $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $vCenterUser,$vCenterUserPassword
 
 # Connect to the vCenter Server with collected credentials
-Connect-VIServer -Server $vCenterServer -Credential $Credentials | Out-Null
+if(!(Connect-VIServer -Server $vCenterServer -Credential $Credentials -ErrorAction Silently)) {
+    Write-Host "Error: Could not connect to vCenter server $vCenterServer" -ForegroundColor Red
+    exit 1
+}
 Write-Host "Connected to your vCenter server $vCenterServer" -ForegroundColor Green
 
 # Provide a name for your new role
 $NewRole = Read-Host "Enter your desired name for the new vCenter role"
+
+# Check if the role already exists
+$existingRole = Get-VIRole -Name $NewRole -ErrorAction SilentlyContinue
+if ($existingRole) {
+    Write-Host "A role with the name $NewRole already exists." -ForegroundColor Yellow
+
+    # Get the current privileges of the role
+    $currentPrivileges = $existingRole.PrivilegeList | Sort-Object
+
+    # Compare the current privileges with the required privileges
+    $missingPrivileges = $VeeamPrivileges | Where-Object { $_ -notin $currentPrivileges }
+
+    if ($missingPrivileges) {
+        Write-Host "The role $NewRole is missing the following privileges:" -ForegroundColor Yellow
+        Write-Host ($missingPrivileges -join "`n")
+
+        # Ask the user whether they want to add the missing privileges
+        $choice = Read-Host "Do you want to add the missing privileges to the role $NewRole? (yes/no)"
+        if ($choice -eq "yes") {
+            # Add the missing privileges to the role
+            $rolePrivileges = $existingRole.PrivilegeList + $missingPrivileges
+            Set-VIRole -Role $existingRole -AddPrivilege (Get-VIPrivilege -Id $rolePrivileges) | Out-Null
+            Write-Host "The missing privileges have been added to the role $NewRole." -ForegroundColor Green
+        } else {
+            Write-Host "The missing privileges have not been added to the role $NewRole." -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "The role $NewRole already has all the required privileges." -ForegroundColor Green
+    }
+    
+    # Exit the script since the user chose not to add the missing privileges or there were no missing privileges
+    exit 1
+}
+
 Write-Host "Thanks, your new vCenter role will be named $NewRole" -ForegroundColor Green
 
 # Creating the new role with the needed permissions
@@ -150,6 +193,17 @@ New-VIRole -Name $NewRole -Privilege (Get-VIPrivilege -Id $VeeamPrivileges) | Ou
 Write-Host "Your new vCenter role has been created, here it is:" -ForegroundColor Green
 Get-VIRole -Name $NewRole | Select-Object Description, PrivilegeList, Server, Name | Format-List
 
+# Ask if a user should be assigned to the role
+$assignUser = Read-Host "Do you want to assign a user to the role $NewRole, this be be added at the root level of vCenter? (yes/no)"
+if ($assignUser -eq "yes") {
+    # Get the user information
+    $userName = Read-Host "Enter the user name (DOMAIN\User or user@domain.com)"
+
+    # Assign the user to the role
+    New-VIPermission -Entity (Get-Folder "Datacenters" -Type Datacenter | Where { $_.ParentId -eq $null }) -Principal $userName -Role $NewRole -Propagate:$true
+    Write-Host "The user $userName has been assigned to the role $NewRole." -ForegroundColor Green
+}
+
 # Disconnecting from the vCenter Server
 Disconnect-VIServer -Confirm:$false
-Write-Host "Disconnected from your vCenter Server $vCenterServer - have a great day :)" -ForegroundColor Green
+Write-Host "Disconnected from your vCenter Server $vCenterServer - have a Veeamazing day :)" -ForegroundColor Green
