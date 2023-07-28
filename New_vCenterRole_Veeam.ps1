@@ -114,6 +114,7 @@ $VeeamPrivileges = @(
 'VirtualMachine.Inventory.Delete',
 'VirtualMachine.Inventory.Register',
 'VirtualMachine.Inventory.Unregister',
+'VirtualMachine.Inventory.Move',
 'VirtualMachine.Provisioning.DiskRandomAccess',
 'VirtualMachine.Provisioning.DiskRandomRead',
 'VirtualMachine.Provisioning.GetVmFiles',
