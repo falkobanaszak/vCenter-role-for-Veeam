@@ -69,6 +69,7 @@ $VeeamPrivileges = @(
 'Host.Config.Patch',
 'Host.Config.Storage',
 'InventoryService.Tagging.AttachTag',
+'InventoryService.Tagging.ObjectAttachable',
 'Network.Assign',
 'Network.Config',
 'Resource.AssignVMToPool',
