@@ -38,7 +38,7 @@
 
 # Here are all necessary and cumualative vCenter Privileges needed for all operations of Veeam Backup & Replication V12
 $VeeamPrivileges = @(
-    'Cryptographer.Access',
+'Cryptographer.Access',
 'Cryptographer.AddDisk',
 'Cryptographer.Encrypt',
 'Cryptographer.EncryptNew',
