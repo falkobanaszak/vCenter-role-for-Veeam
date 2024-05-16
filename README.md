@@ -12,15 +12,18 @@ Simply execute the script and follow the steps to fill in the relevant data like
 Feel free to give me feedback on this script, as I want to further improve it.
 
 **Recent Improvements**
+ - [X] Added ESXi standalone support
  - [X] Add a function to assign a user to the role
  - [X] Add a function to check against an existing role, print the missing privileges and let the user decide to apply the missing privileges to the already existing role
  
 You can get the script here: [New_vCenterRole_Veeam.ps1](/New_vCenterRole_Veeam.ps1)
 
-Successful tested against: 
+Successful tested against:
+- VMware vCenter 8.0
 - VMware vCenter 6.5
 - VMware vCenter 6.7
 - VMware vCenter 7.0
+- VMware ESXi 7.0
 - Veeam Backup & Replication Version 10
 - Veeam Backup & Replication Version 11
 - Veeam Backup & Replication Version 12

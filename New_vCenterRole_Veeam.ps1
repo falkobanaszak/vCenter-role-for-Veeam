@@ -15,6 +15,7 @@
     Change Log    V2.00, 06/08/2021 - Second version: Updated the script to use the Veeam Backup & Replication Version 11 cumulative privileges
     Change Log    V2.01, 07/10/2021 - Second version revision: Add missing "VirtualMachine.Config.Annotation"
     Change Log    V3.00, 07/15/2023 - Updated code for better error handling, added ability to check if role exists and add missing permissions to existing role, added ability to add user to new role
+    Change Log    V4.00, 15/05/2023 - Added ESXi standalone support, add check for user before asign role, add create user for ESXi standalone
     
 .LICENSE
     MIT License
@@ -37,7 +38,93 @@
 #>
 
 # Here are all necessary and cumualative vCenter Privileges needed for all operations of Veeam Backup & Replication V12
-$VeeamPrivileges = @(
+$esxiVeeamPrivileges = @(
+'Cryptographer.Access',
+'Cryptographer.AddDisk',
+'Cryptographer.Encrypt',
+'Cryptographer.EncryptNew',
+'Cryptographer.Migrate',
+'DVPortgroup.Create',
+'DVPortgroup.Delete',
+'DVPortgroup.Modify',
+'Datastore.AllocateSpace',
+'Datastore.Browse',
+'Datastore.Config',
+'Datastore.DeleteFile',
+'Datastore.FileManagement',
+'Extension.Register',
+'Extension.Unregister',
+'Folder.Create',
+'Folder.Delete',
+'Global.Diagnostics',
+'Global.DisableMethods',
+'Global.EnableMethods',
+'Global.Licenses',
+'Global.LogEvent',
+'Global.ManageCustomFields',
+'Global.SetCustomField',
+'Global.Settings',
+'Host.Config.AdvancedConfig',
+'Host.Config.Maintenance',
+'Host.Config.Network',
+'Host.Config.Patch',
+'Host.Config.Storage',
+'Network.Assign',
+'Network.Config',
+'Resource.AssignVMToPool',
+'Resource.ColdMigrate',
+'Resource.CreatePool',
+'Resource.DeletePool',
+'Resource.HotMigrate',
+'StoragePod.Config',
+'System.Anonymous',
+'System.Read',
+'System.View',
+'VApp.AssignResourcePool',
+'VApp.AssignVM',
+'VApp.Unregister',
+'VirtualMachine.Config.AddExistingDisk',
+'VirtualMachine.Config.AddNewDisk',
+'VirtualMachine.Config.AddRemoveDevice',
+'VirtualMachine.Config.AdvancedConfig',
+'VirtualMachine.Config.Annotation',
+'VirtualMachine.Config.ChangeTracking',
+'VirtualMachine.Config.DiskExtend',
+'VirtualMachine.Config.DiskLease',
+'VirtualMachine.Config.EditDevice',
+'VirtualMachine.Config.RawDevice',
+'VirtualMachine.Config.RemoveDisk',
+'VirtualMachine.Config.Rename',
+'VirtualMachine.Config.Resource',
+'VirtualMachine.Config.Settings',
+'VirtualMachine.GuestOperations.Execute',
+'VirtualMachine.GuestOperations.Modify',
+'VirtualMachine.GuestOperations.Query',
+'VirtualMachine.Interact.ConsoleInteract',
+'VirtualMachine.Interact.DeviceConnection',
+'VirtualMachine.Interact.GuestControl',
+'VirtualMachine.Interact.PowerOff',
+'VirtualMachine.Interact.PowerOn',
+'VirtualMachine.Interact.SetCDMedia',
+'VirtualMachine.Interact.SetFloppyMedia',
+'VirtualMachine.Interact.Suspend',
+'VirtualMachine.Inventory.Create',
+'VirtualMachine.Inventory.Delete',
+'VirtualMachine.Inventory.Register',
+'VirtualMachine.Inventory.Unregister',
+'VirtualMachine.Inventory.Move',
+'VirtualMachine.Provisioning.DiskRandomAccess',
+'VirtualMachine.Provisioning.DiskRandomRead',
+'VirtualMachine.Provisioning.GetVmFiles',
+'VirtualMachine.Provisioning.MarkAsTemplate',
+'VirtualMachine.Provisioning.MarkAsVM',
+'VirtualMachine.Provisioning.PutVmFiles',
+'VirtualMachine.State.CreateSnapshot',
+'VirtualMachine.State.RemoveSnapshot',
+'VirtualMachine.State.RenameSnapshot',
+'VirtualMachine.State.RevertToSnapshot')
+
+$vCenterVeeamPrivileges = @(
 'Cryptographer.Access',
 'Cryptographer.AddDisk',
 'Cryptographer.Encrypt',
@@ -134,7 +221,7 @@ if (!(Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
 Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 
 # Get the vCenter Server Name to connect to
-$vCenterServer = Read-Host "Enter vCenter Server host name (DNS with FQDN or IP address)"
+$vCenterServer = Read-Host "Enter vCenter or ESXi (standalone) Server host name (DNS with FQDN or IP address)"
 
 # Get User to connect to vCenter Server
 $vCenterUser = Read-Host "Enter your user name (DOMAIN\User or user@domain.com)"
@@ -151,6 +238,25 @@ if(!(Connect-VIServer -Server $vCenterServer -Credential $Credentials -ErrorActi
     exit 1
 }
 Write-Host "Connected to your vCenter server $vCenterServer" -ForegroundColor Green
+
+# Check if server is vCenter (vpx) or ESXi (embeddedEsx) and set privileges list
+if ($global:DefaultVIServer.Productline -like 'vpx') {
+    # Case vCenter
+    $VeeamPrivileges = $vCenterVeeamPrivileges
+}
+elseif ($global:DefaultVIServer.Productline -like 'embeddedEsx') {
+    # Case ESXi
+    $VeeamPrivileges = $esxiVeeamPrivileges
+}
+else {
+    # Case other
+    Write-Host "Error: $vCenterServer seem not be a vCenter neither ESXi server." -ForegroundColor Red
+
+    # Disconnect and exit
+    Disconnect-VIServer -Confirm:$false
+    Write-Host "Disconnected from your vCenter Server $vCenterServer - have a Veeamazing day :)" -ForegroundColor Green
+    exit 1
+}
 
 # Provide a name for your new role
 $NewRole = Read-Host "Enter your desired name for the new vCenter role"
@@ -183,26 +289,56 @@ if ($existingRole) {
     } else {
         Write-Host "The role $NewRole already has all the required privileges." -ForegroundColor Green
     }
-    
-    # Exit the script since the user chose not to add the missing privileges or there were no missing privileges
-    exit 1
+}
+else {
+    Write-Host "Thanks, your new vCenter role will be named $NewRole" -ForegroundColor Green
+
+    # Creating the new role with the needed permissions
+    New-VIRole -Name $NewRole -Privilege (Get-VIPrivilege -Id $VeeamPrivileges) | Out-Null
+    Write-Host "Your new vCenter role has been created, here it is:" -ForegroundColor Green
+    Get-VIRole -Name $NewRole | Select-Object Description, PrivilegeList, Server, Name | Format-List
 }
 
-Write-Host "Thanks, your new vCenter role will be named $NewRole" -ForegroundColor Green
-
-# Creating the new role with the needed permissions
-New-VIRole -Name $NewRole -Privilege (Get-VIPrivilege -Id $VeeamPrivileges) | Out-Null
-Write-Host "Your new vCenter role has been created, here it is:" -ForegroundColor Green
-Get-VIRole -Name $NewRole | Select-Object Description, PrivilegeList, Server, Name | Format-List
 
 # Ask if a user should be assigned to the role
 $assignUser = Read-Host "Do you want to assign a user to the role $NewRole, this be be added at the root level of vCenter? (yes/no)"
 if ($assignUser -eq "yes") {
     # Get the user information
-    $userName = Read-Host "Enter the user name (DOMAIN\User or user@domain.com)"
+    $userName = Read-Host "Enter the user name (vCenter : user@domain.com or ESXi : user )"
+
+    # Check if server is vCenter (vpx) or ESXi (embeddedEsx) and set privileges list
+    if ($global:DefaultVIServer.Productline -like 'vpx') {
+        # Case vCenter
+        $user = $userName.Split('@')[0]
+        $domain = $userName.Split('@')[1]
+
+        # Check if user already exists
+        if (!(Get-VIAccount $user -Domain $domain -ErrorAction SilentlyContinue)){
+            Write-Host "Error: $userName not exist. You have to create it manualy (you can re-run this script to add permissions to user)." -ForegroundColor Red
+
+            # Disconnect and exit
+            Disconnect-VIServer -Confirm:$false
+            Write-Host "Disconnected from your vCenter Server $vCenterServer - have a Veeamazing day :)" -ForegroundColor Green
+            exit 1
+        }
+
+        # Get user info to asign permissions
+        $userName = Get-VIAccount -User $user -Domain $domain
+    }
+    elseif ($global:DefaultVIServer.Productline -like 'embeddedEsx') {
+        # Case ESXi
+        # Check if user already exists
+        if (!( Get-VMHostAccount -User $userName -ErrorAction SilentlyContinue)) {
+            # Get password
+            $userPassword = Read-Host "Enter $userName password (no worries it is a secure string)" -AsSecureString:$true
+
+            # Create user
+            New-VMHostAccount -Id $userName -Password ([Net.NetworkCredential]::new('',$userPassword).Password) -Description 'Veeam service account'
+        }
+    }
 
     # Assign the user to the role
-    New-VIPermission -Entity (Get-Folder "Datacenters" -Type Datacenter | Where { $_.ParentId -eq $null }) -Principal $userName -Role $NewRole -Propagate:$true
+    New-VIPermission -Entity (Get-Folder -Type Datacenter | Where-Object { $_.ParentId -eq $null }) -Principal $userName -Role $NewRole -Propagate:$true
     Write-Host "The user $userName has been assigned to the role $NewRole." -ForegroundColor Green
 }
 
