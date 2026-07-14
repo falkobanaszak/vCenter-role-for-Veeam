@@ -3,6 +3,7 @@ Cryptographer.AddDisk
 Cryptographer.Encrypt
 Cryptographer.EncryptNew
 Cryptographer.Migrate
+Cryptographer.RegisterVM
 DVPortgroup.Create
 DVPortgroup.Delete
 DVPortgroup.Modify
@@ -36,10 +37,13 @@ Resource.AssignVMToPool
 Resource.ColdMigrate
 Resource.CreatePool
 Resource.DeletePool
+Resource.EditPool
 Resource.HotMigrate
 StoragePod.Config
+StorageProfile.Apply
 StorageProfile.Update
 StorageProfile.View
+StorageProfile.ViewPermissions
 System.Anonymous
 System.Read
 System.View
@@ -72,9 +76,11 @@ VirtualMachine.Interact.SetCDMedia
 VirtualMachine.Interact.SetFloppyMedia
 VirtualMachine.Interact.Suspend
 VirtualMachine.Inventory.Create
+VirtualMachine.Inventory.CreateFromExisting
 VirtualMachine.Inventory.Delete
 VirtualMachine.Inventory.Register
 VirtualMachine.Inventory.Unregister
+VirtualMachine.Inventory.Move
 VirtualMachine.Provisioning.DiskRandomAccess
 VirtualMachine.Provisioning.DiskRandomRead
 VirtualMachine.Provisioning.GetVmFiles

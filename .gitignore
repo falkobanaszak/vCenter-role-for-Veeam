@@ -1,0 +1,12 @@
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# PowerShell / build artifacts
+*.log
